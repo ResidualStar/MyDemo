@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <link rel="stylesheet" href="/public/css/index.css">
+</head>
+<style>
+    #back {
+        cursor: pointer;
+    }
+    
+    .comment {
+        float: left;
+        width: 500px;
+        /* height: 100px; */
+        margin-top: 20px;
+        padding: 20px;
+        box-sizing: border-box;
+        background-color: #fff;
+    }
+    
+    .comment div:first-of-type span:first-of-type {
+        float: left;
+    }
+    
+    .comment div:last-of-type span:last-of-type {
+        float: right;
+    }
+    
+    textarea {
+        margin-top: 20px;
+        resize: none;
+        width: 100%;
+        border: 1px solid skyblue;
+    }
+    
+    button {
+        /* margin-top: 20px; */
+        border: none;
+        color: #fff;
+        width: 100%;
+        background-color: cyan;
+        cursor: pointer;
+    }
+    
+    #form p {
+        /* display: none; */
+        margin-top: 20px;
+        text-align: center;
+        color: #fff;
+        width: 100%;
+        background-color: red;
+    }
+    
+    .comment ul li {
+        margin-top: 20px;
+        width: 100%;
+        background-color: #eee;
+    }
+    
+    .comment ul li div p:first-of-type {
+        float: left;
+    }
+    
+    .comment ul li div p:nth-of-type(2) {
+        float: right;
+    }
+</style>
+
+<body>
+    <header>
+        <ul>
+            <li>
+                <a href=""> <img src="/public/image/u=2386126197,1618699013&fm=11&gp=0.jpg" alt=""></a>
+            </li>
+        </ul>
+    </header>
+    <main class='clearfix'>
+        <article>
+            <ul id="content">
+            </ul>
+        </article>
+        <aside>
+            <ul>
+                {{ if user }}
+                <div id="administrator">
+                    <h4>用户信息</h4>
+                    <p>用户名：{{ user }}</p>
+                    <p>
+                        {{ if !isAdmin }} 欢迎光临我的博客 {{ else }} 你好，你是管理员
+                        <a href="/admin">点击这里进入管理员页面</a> {{ /if }}
+                    </p>
+                    <a href="javascript:;">退出登入</a>
+                </div>
+                {{ /if }} {{ if !user }}
+                <li id="login">
+                    <h3>登入</h3>
+                    <form>
+                        <label for="">用户名：</label>
+                        <input type="text" name="user">
+                        <label for="">密　码：</label>
+                        <input type="password" name="pass">
+                        <input type="submit" value='登入'>
+                    </form>
+                    <p>还没注册?<a href="javascript:;">马上注册</a></p>
+                </li>
+                {{ /if }} {{ if !user }}
+                <li id="enter">
+                    <h3>注册</h3>
+                    <form>
+                        <label for="">用户名：</label>
+                        <input type="text" name="user">
+                        <label for="">密　码：</label>
+                        <input type="password" name="pass">
+                        <label for="">确　认：</label>
+                        <input type="password" name="newpass">
+                        <input type="submit" value="注册" id="enter1">
+                    </form>
+                    <p>已有账户?<a href="javascript:;">立即登入</a></p>
+                </li>
+                {{ /if }}
+                <li>
+                    <h3>社区</h3>
+                    <p>1</p>
+                    <p>2</p>
+                </li>
+            </ul>
+        </aside>
+        <div class="comment">
+            <div class="clearfix">
+                <span style="float: left">評論</span>
+                <span style="float: right">一共有<b>0</b>條評論</span>
+            </div>
+            <div id="form">
+                <textarea></textarea>
+                <button>提交</button>
+                <p>您還沒有登入, 請先登入!</p>
+            </div>
+            <ul id="commentUl">
+                <!-- <li>
+                    <div class="clearfix">
+                        <p>admin</p>
+                        <p>ctime</p>
+                    </div>
+                    <br>
+                    <p id="comment">content</p>
+                </li> -->
+            </ul>
+        </div>
+        <div class="paging">
+            <p id="top">上一页</p>
+            <p id="center">1/2</p>
+            <p id="bottom">下一页</p>
+        </div>
+    </main>
+    <footer>
+        <div>
+            博主：start &nbsp;&nbsp; 邮箱：1136633287@qq.com &nbsp;&nbsp;githup：<a href="https://github.com/ShowTimeYu">https://github.com/ShowTimeYu</a>
+        </div>
+    </footer>
+
+    <script src="/node_modules/jquery/dist/jquery.min.js"></script>
+    <script>
+        let id = location.href.split('=')[1]
+        let userName, page, max;
+        $.ajax({
+            url: '/comment/find',
+            type: 'post',
+            dataType: 'json',
+            success(res) {
+                page = res.page
+                console.log(res)
+                let html = ''
+                res.data.forEach(item => {
+                    html += `
+                    <li>
+                    <div class="clearfix">
+                        <p>${item.user}</p>
+                        <p>${item.commentTime}</p>
+                    </div>
+                    <br>
+                    <p id="comment">${item.comment}</p>
+                </li>`
+                });
+                $('#commentUl').html(html)
+                $.ajax({
+                    url: '/comment/findBycategoryLength',
+                    type: 'post',
+                    data: 'json',
+                    success(res) {
+                        console.log(res)
+                        max = res
+                        $('b').html(max)
+                        $('#center').html(`${page}/${Math.ceil(max / 3)}`)
+                        $.ajax({
+                            url: '/content/findById',
+                            type: 'post',
+                            dataType: 'json',
+                            data: {
+                                id
+                            },
+                            success(res) {
+                                // page = res.page
+                                console.log(res)
+
+                                let html = `
+                                <li>
+                                <h3>${res[0].title}</h3>
+                                作者：<span style="color:cyan">${res[0].user}</span>
+                                -阅读：
+                                <span style="color:cyan">${res[0].views}</span>
+                                -评论：
+                                <span style="color:cyan">${max}</span>
+                                </br>
+                                </br>
+                                时间：
+                               <span style="color:cyan">${res[0].addTime}</span>
+                                <p style="color:cyan">${res[0].description}</p>
+                                <p  style="color:cyan">${res[0].content}</p>
+                            </li>
+                            <li id="back">返回上一級</li>`
+                                $('#content').html(html)
+                            }
+                        })
+                    }
+                })
+            }
+        })
+        $.ajax({
+            url: '/content/user',
+            dataType: 'json',
+            success(res) {
+                // console.log(res.user)
+                userName = res
+                if (!userName) return $('#form p').show()
+                $('#form p').hide()
+            }
+        })
+        $.ajax({
+            url: '/content/updataViews',
+            type: 'get',
+            dataType: 'json',
+            data: {
+                id
+            },
+            success(res) {
+                // console.log(res.code)
+            }
+        })
+        $(function() {
+
+            $('#administrator').children('a').on('click', function() {
+                $.ajax({
+                    url: '/api/logout',
+                    type: 'get',
+                    dataType: 'json',
+                    success(res) {
+                        if (res.code == 1) {
+                            location.reload()
+                        }
+                    }
+                })
+            })
+            $('#content').on('click', '#back', function() {
+                history.back()
+            })
+            $('button').on('click', function() {
+                if (!userName) return $('#form p').show()
+                $('#form p').hide()
+                var user = userName.user
+                let comment = $('#form textarea').val()
+                    // console.log(comment, user);
+
+                $.ajax({
+                    url: '/comment/add',
+                    type: 'post',
+                    dataType: 'json',
+                    data: {
+                        user,
+                        comment
+                    },
+                    success(res) {
+                        console.log(res);
+                        if (res.code == 1) {
+                            alert(res.msg)
+                            location.reload()
+                        }
+                    }
+                })
+            })
+            $('#top').on('click', function() {
+                console.log(page)
+                if (page == 1) return alert('已是第一頁')
+                $.ajax({
+                    url: '/comment/find',
+                    data: {
+                        page: --page
+                    },
+                    type: 'post',
+                    dataType: 'json',
+                    success(res) {
+                        console.log(res)
+                        let html = ''
+                        res.data.forEach(item => {
+                            html += `
+                            <li>
+                            <div class="clearfix">
+                                <p>${item.user}</p>
+                                <p>${item.commentTime}</p>
+                            </div>
+                            <br>
+                            <p id="comment">${item.comment}</p>
+                        </li>`
+                        });
+                        $('#commentUl').html(html)
+                        $('#center').html(`${res.page}/${Math.ceil(max / 3)}`)
+                    }
+                })
+            })
+            $('#bottom').on('click', function() {
+                if (page > Math.ceil(max / 3) - 1) return alert('已是最後一頁')
+                $.ajax({
+                    url: '/comment/find',
+                    data: {
+                        page: ++page
+                    },
+                    dataType: 'json',
+                    type: 'post',
+                    success(res) {
+                        console.log(res)
+                        let html = ''
+                        res.data.forEach(item => {
+                            html += `
+                    <li>
+                    <div class="clearfix">
+                        <p>${item.user}</p>
+                        <p>${item.commentTime}</p>
+                    </div>
+                    <br>
+                    <p id="comment">${item.comment}</p>
+                </li>`
+                        });
+                        $('#commentUl').html(html)
+                        $('#center').html(`${page}/${Math.ceil(max / 3)}`)
+                    }
+                })
+            })
+        })
+    </script>
+</body>
+
+</html>
