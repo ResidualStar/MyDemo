@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+
+<body>
+    <h1>禁止非管理人员进入</h1>
+    <h2>...点击返回</h2>
+    <script>
+        document.querySelector('h2').onclick = function() {
+            window.history.back()
+        }
+    </script>
+</body>
+
+</html>
+<style>
+    body {
+        background-color: #ccc;
+    }
+    
+    h1 {
+        text-align: center;
+        font-size: 100px;
+        color: darkred;
+    }
+    
+    h2 {
+        color: tomato;
+        float: right;
+        cursor: pointer;
+    }
+</style>
